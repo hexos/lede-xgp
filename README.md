@@ -11,6 +11,7 @@
 1. **跟踪 master 分支**：`prepare.sh` 使用 `git clone -b master --single-branch`，已存在的本地仓库也会强制 `checkout -B master` 并同步 `origin/master`。
 2. **TD-TECH USB 模组支持**：`patches/999-add-TD-TECH-option-id.patch` 为内核 `drivers/usb/serial/option.c` 增加 TD-TECH（VID `0x3466`）多个 PID。`prepare.sh` 会读取 `target/linux/rockchip/Makefile` 中的 `KERNEL_PATCHVER`，把补丁动态放入 `target/linux/rockchip/patches-<内核版本>/`，内核升级后仍可自动适配（已在内核 6.18 上验证可直接应用）。
 3. **AT WebServer / LuCI 内置**：`assets/at-webserver-ubus.zip` 中的 3 个 APK v3 包（at-webserver、luci-app-at-webserver、luci-i18n-at-webserver-zh-cn）已解包到 `overlays/at-webserver/`，在 `prepare.sh` 阶段作为 rootfs overlay 叠加进固件，无需在设备上额外安装。附 `zzzz-enable-at-webserver` uci-default 用于开机自动启用服务。
+4. **config 重新生成**：`xgp.config` 已在 master 源码上执行 `make defconfig` 重新生成，清除了失效符号并把 `luci-app-opkg` / `luci-i18n-opkg-zh-cn` 更新为 master 上的新名 `luci-app-package-manager` / `luci-i18n-package-manager-zh-cn`；仍保持 **opkg**（`# CONFIG_USE_APK is not set`），因为 LEDE master 的 apk 打包链路不完整。
    - AT 网页入口：`http://<路由器IP>/5700/`
    - LuCI 菜单：服务 → MT5700 AT WebServer
    - 内置 Web 服务默认端口：WebSocket `8765`，模块 AT 端口 `192.168.8.1:20249`
