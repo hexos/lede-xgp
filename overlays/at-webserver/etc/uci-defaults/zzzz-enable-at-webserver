@@ -1,0 +1,4 @@
+#!/bin/sh
+#  baked-in build: no package postinst runs, so enable the service manually
+[ -x /etc/init.d/at-webserver ] && /etc/init.d/at-webserver enable >/dev/null 2>&1
+exit 0

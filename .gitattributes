@@ -1,0 +1,22 @@
+# 保证构建脚本、init 脚本与内核补丁在 Linux CI 上保持 LF 换行，
+# 否则 patch(1) 会因 CRLF 无法应用，shell 脚本也会因 \r 执行失败。
+* text=auto
+
+# 二进制资源禁止换行转换
+*.zip binary
+*.apk binary
+*.png binary
+*.ico binary
+*.jpg binary
+*.gz binary
+atserver binary
+
+*.sh text eol=lf
+*.patch text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.lua text eol=lf

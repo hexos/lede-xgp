@@ -1,0 +1,20 @@
+#!/bin/sh
+# 后台重启 AT WebServer，供 LuCI 页面调用。
+# 服务的 stop/start 会整表 reload 防火墙，耗时可能超过 30 秒，
+# LuCI 经 ubus 同步调用会超时失败，所以这里 fork 到后台后立即返回。
+# 重启结束后写入标记文件，页面据此判断重启是否完成。
+# 注意：后台子进程必须重定向标准输入输出，否则 rpcd 会一直等管道关闭而超时。
+(
+	sleep 1
+	/etc/init.d/at-webserver restart >/dev/null 2>&1
+
+	# 兜底：restart 若因竞态停在停止状态，再补一次 start
+	#（enabled=0 时 start_service 会直接退出，不会误启动）
+	if ! /etc/init.d/at-webserver status >/dev/null 2>&1; then
+		sleep 2
+		/etc/init.d/at-webserver start >/dev/null 2>&1
+	fi
+
+	date +%s > /tmp/at-webserver-restart.done
+) </dev/null >/dev/null 2>&1 &
+exit 0
