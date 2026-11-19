@@ -54,6 +54,11 @@ jobs:
           rm -rf staging_dir/toolchain-* build_dir/target-*/toolchain
           make -j$(nproc) toolchain/install
 
+      - name: Build kernel (needed for external kmod)
+        run: |
+          cd lede
+          make -j$(nproc) target/linux/compile
+
       - name: Compile gc9307 with verbose output
         id: compile
         run: |
@@ -62,8 +67,8 @@ jobs:
           make -j$(nproc) V=s package/zz/kmod-fb-tft-gc9307/compile > gc9307.log 2>&1
           RC=$?
           echo "exit code: $RC"
-          echo "=== LAST 150 LINES ==="
-          tail -150 gc9307.log
+          echo "=== LAST 200 LINES ==="
+          tail -200 gc9307.log
           exit $RC
 
       - name: Upload log
