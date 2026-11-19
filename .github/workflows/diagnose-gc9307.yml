@@ -47,8 +47,12 @@ jobs:
           cd lede
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+          ./scripts/feeds install -a -f -p qmodem
           cp ../xgp.config .config
           make defconfig
+          # 缓存里 toolchain 不完整（缺 ld-musl），强制重装，保证内核模块能编译
+          rm -rf staging_dir/toolchain-* build_dir/target-*/toolchain
+          make -j$(nproc) toolchain/install
 
       - name: Compile gc9307 with verbose output
         id: compile
