@@ -72,6 +72,15 @@ if [ -d "package/zz/kmod-fb-tft-gc9307" ]; then
 else
     git clone https://github.com/zzzz0317/kmod-fb-tft-gc9307.git package/zz/kmod-fb-tft-gc9307 || { echo "kmod-fb-tft-gc9307 git clone failed"; exit 1; }
 fi
+# 该第三方驱动源码按内核 6.15+ 编写，使用了 .remove_new 回调；但 LEDE master 的 6.18
+# 内核（带 OpenWrt 补丁）的 struct platform_driver 仍是老式 .remove (void 返回)。
+# 驱动的 fbtft_driver_remove_pdev 签名正好是 void (*)(struct platform_device *)，
+# 与老式 .remove 匹配，故把 .remove_new 改回 .remove 即可，避免编译报错：
+#   error: 'struct platform_driver' has no member named 'remove_new'
+# sed 幂等：重复执行无副作用。
+sed -i 's/\.remove_new[[:space:]]*=/.remove =/g' package/zz/kmod-fb-tft-gc9307/src/fbtft.h
+echo "patched fbtft.h: .remove_new -> .remove (kernel 6.18 compat)"
+grep -n '\.remove' package/zz/kmod-fb-tft-gc9307/src/fbtft.h | head
 if [ -d "package/zz/xgp-v3-screen" ]; then
     cd package/zz/xgp-v3-screen
     git pull || { echo "xgp-v3-screen git pull failed"; exit 1; }
