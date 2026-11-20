@@ -62,4 +62,20 @@ echo "ZZ_BUILD_LEDE_HASH='$(git rev-parse HEAD)'" >> files/etc/zz_build_id
 echo "make download"
 make download -j8 || { echo "download failed"; exit 1; }
 echo "make lede"
-make V=0 -j$(nproc) || { echo "make failed"; exit 1; }
+if make V=0 -j$(nproc); then
+    echo "make ok"
+else
+    echo "===== MAIN BUILD FAILED - retry key stages with V=s to expose the error ====="
+    # V=0 隐藏具体错误；失败时用 V=s 重跑关键阶段，让日志显示真正出错的命令/包。
+    # 包此时已编译完，重装/重打包很快，不会像 world 那样全量重编。
+    echo "----- V=s package/install -----"
+    make -j1 V=s package/install 2>&1 | tee /tmp/install_retry.log
+    echo "----- V=s target/linux/install -----"
+    make -j1 V=s target/linux/install 2>&1 | tee /tmp/target_install_retry.log
+    echo "===== LAST 100 LINES: package/install ====="
+    tail -100 /tmp/install_retry.log
+    echo "===== LAST 100 LINES: target/linux/install ====="
+    tail -100 /tmp/target_install_retry.log
+    echo "make failed"
+    exit 1
+fi
