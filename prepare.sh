@@ -65,6 +65,17 @@ if [ -d "package/zz/luci-theme-alpha" ]; then
 else
     git clone https://github.com/derisamedia/luci-theme-alpha.git package/zz/luci-theme-alpha || { echo "luci-theme-alpha git clone failed"; exit 1; }
 fi
+# luci-theme-alpha 硬依赖 luci-app-alpha-config，但原 jerrykuku 仓库已 404。
+# 使用社区维护的可用仓库，否则 package/install 阶段会报：
+#   pkg_hash_check_unresolved: cannot find dependency luci-app-alpha-config for luci-theme-alpha
+# 该目录名即包名 luci-app-alpha-config，luci.mk 会据此正确推导。
+if [ -d "package/zz/luci-app-alpha-config" ]; then
+    cd package/zz/luci-app-alpha-config
+    git pull || { echo "luci-app-alpha-config git pull failed"; exit 1; }
+    cd ../../..
+else
+    git clone https://github.com/animegasan/luci-app-alpha-config.git package/zz/luci-app-alpha-config || { echo "luci-app-alpha-config git clone failed"; exit 1; }
+fi
 if [ -d "package/zz/kmod-fb-tft-gc9307" ]; then
     cd package/zz/kmod-fb-tft-gc9307
     git pull || { echo "kmod-fb-tft-gc9307 git pull failed"; exit 1; }
